@@ -1,0 +1,140 @@
+package com.example.stockpos.app.service.impl;
+
+import com.example.stockpos.app.dto.requests.PaginationRequest;
+import com.example.stockpos.app.dto.requests.UserRequest;
+import com.example.stockpos.app.dto.responses.UserResponse;
+import com.example.stockpos.app.dto.responses.ApiResponse;
+import com.example.stockpos.app.dto.responses.PaginationMeta;
+import com.example.stockpos.app.dto.responses.PaginationResponse;
+import com.example.stockpos.app.models.User;
+import com.example.stockpos.app.models.Role;
+import com.example.stockpos.app.repository.UserRepository;
+import com.example.stockpos.app.repository.RoleRepository;
+import com.example.stockpos.app.service.UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+public class UserServiceImpl implements UserService {
+
+    private final UserRepository repository;
+    private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    @Override
+    public ApiResponse<List<UserResponse>> findAll() {
+        List<UserResponse> users = repository.findAll().stream()
+                .map(UserResponse::fromEntity)
+                .collect(Collectors.toList());
+        return ApiResponse.success("Users fetched successfully", users);
+    }
+
+    @Override
+    public ApiResponse<PaginationResponse<UserResponse>> findAllWithPagination(PaginationRequest request) {
+        Pageable pageable = PageRequest.of(
+                request.getPage(), 
+                request.getLimit(), 
+                request.getOrderBy() != null && !request.getOrderBy().isEmpty() ? Sort.by(request.getOrderBy()) : Sort.unsorted()
+        );
+
+        Specification<User> spec = (root, query, criteriaBuilder) -> {
+            var predicates = criteriaBuilder.conjunction();
+
+            if (request.getSearch() != null && !request.getSearch().isEmpty()) {
+                String searchPattern = "%" + request.getSearch().toLowerCase() + "%";
+                predicates = criteriaBuilder.and(predicates, criteriaBuilder.or(
+                        criteriaBuilder.like(criteriaBuilder.lower(root.get("username")), searchPattern),
+                        criteriaBuilder.like(criteriaBuilder.lower(root.get("email")), searchPattern)
+                ));
+            }
+
+            if (request.getFilters() != null) {
+                if (request.getFilters().containsKey("status")) {
+                    predicates = criteriaBuilder.and(predicates, criteriaBuilder.equal(root.get("status"), Boolean.parseBoolean(request.getFilters().get("status"))));
+                }
+                if (request.getFilters().containsKey("roleId")) {
+                    predicates = criteriaBuilder.and(predicates, criteriaBuilder.equal(root.get("role").get("id"), Integer.parseInt(request.getFilters().get("roleId"))));
+                }
+            }
+
+            return predicates;
+        };
+
+        Page<User> userPage = repository.findAll(spec, pageable);
+        List<UserResponse> content = userPage.getContent().stream()
+                .map(UserResponse::fromEntity)
+                .collect(Collectors.toList());
+
+        int from = (int) userPage.getPageable().getOffset() + 1;
+        int to = from + userPage.getNumberOfElements() - 1;
+
+        PaginationMeta meta = PaginationMeta.builder()
+                .total(userPage.getTotalElements())
+                .from(userPage.getNumberOfElements() > 0 ? from : 0)
+                .to(userPage.getNumberOfElements() > 0 ? to : 0)
+                .page(userPage.getNumber())
+                .limit(userPage.getSize())
+                .build();
+
+        return ApiResponse.success("Users fetched successfully", PaginationResponse.<UserResponse>builder()
+                .data(content)
+                .meta(meta)
+                .build());
+    }
+
+    @Override
+    public ApiResponse<UserResponse> findById(Integer id) {
+        UserResponse response = repository.findById(id)
+                .map(UserResponse::fromEntity)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return ApiResponse.success("User fetched successfully", response);
+    }
+
+    @Override
+    public ApiResponse<UserResponse> create(UserRequest.CreateUserRequest request) {
+        Role role = roleRepository.findById(request.getRoleId())
+                .orElseThrow(() -> new RuntimeException("Role not found"));
+
+        User user = User.builder()
+                .username(request.getUsername())
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .status(request.getStatus())
+                .role(role)
+                .build();
+        
+        return ApiResponse.success("User created successfully", UserResponse.fromEntity(repository.save(user)));
+    }
+
+    @Override
+    public ApiResponse<UserResponse> update(Integer id, UserRequest.UpdateUserRequest request) {
+        User user = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        user.setUsername(request.getUsername());
+        user.setEmail(request.getEmail());
+        if (request.getPassword() != null && !request.getPassword().isEmpty()) {
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
+        user.setStatus(request.getStatus());
+        
+        return ApiResponse.success("User updated successfully", UserResponse.fromEntity(repository.save(user)));
+    }
+
+    @Override
+    public ApiResponse<Void> delete(Integer id) {
+        repository.deleteById(id);
+        return ApiResponse.success("User deleted successfully", null);
+    }
+
+}
