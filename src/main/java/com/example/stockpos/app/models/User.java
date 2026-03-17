@@ -58,10 +58,10 @@ public class User implements UserDetails {
         authorities.add(new SimpleGrantedAuthority(role.getName()));
         
         // 2. Add granular permissions (e.g., "read:products", "write:orders")
-        if (role.getPermissions() != null) {
-            List<SimpleGrantedAuthority> permissionAuthorities = role.getPermissions()
+        if (role.getRolePermissions() != null) {
+            List<SimpleGrantedAuthority> permissionAuthorities = role.getRolePermissions()
                 .stream()
-                .map(permission -> new SimpleGrantedAuthority(permission.getName()))
+                .map(rp -> new SimpleGrantedAuthority(rp.getPermission().getName()))
                 .collect(Collectors.toList());
             authorities.addAll(permissionAuthorities);
         }

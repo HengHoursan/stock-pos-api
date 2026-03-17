@@ -3,13 +3,14 @@ package com.example.stockpos.app.service.impl;
 import com.example.stockpos.app.config.jwt.JWTService;
 import com.example.stockpos.app.dto.requests.AuthRequest;
 import com.example.stockpos.app.dto.requests.UserRequest;
-import com.example.stockpos.app.dto.responses.ApiResponse;
 import com.example.stockpos.app.dto.responses.AuthResponse;
 import com.example.stockpos.app.dto.responses.UserResponse;
 import com.example.stockpos.app.models.User;
 import com.example.stockpos.app.repository.UserRepository;
 import com.example.stockpos.app.repository.RoleRepository;
 import com.example.stockpos.app.service.AuthService;
+import com.example.stockpos.app.exception.UserNotFoundException;
+import com.example.stockpos.app.exception.RoleNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -26,9 +27,9 @@ public class AuthServiceImpl implements AuthService {
     private final AuthenticationManager authenticationManager;
 
     @Override
-    public ApiResponse<AuthResponse> register(UserRequest.CreateUserRequest request) {
+    public AuthResponse register(UserRequest.CreateUserRequest request) {
         var role = roleRepository.findById(request.getRoleId())
-                .orElseThrow(() -> new RuntimeException("Role not found"));
+                .orElseThrow(() -> new RoleNotFoundException(request.getRoleId()));
 
         var user = User.builder()
                 .username(request.getUsername())
@@ -42,16 +43,15 @@ public class AuthServiceImpl implements AuthService {
         var accessToken = jwtService.generateAccessToken(savedUser);
         var refreshToken = jwtService.generateRefreshToken(savedUser);
         
-        // Using a static factory method 'of' or a Builder
-        return ApiResponse.success("User registered successfully", AuthResponse.builder()
+        return AuthResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .user(UserResponse.fromEntity(savedUser))
-                .build());
+                .build();
     }
 
     @Override
-    public ApiResponse<AuthResponse> login(AuthRequest request) {
+    public AuthResponse login(AuthRequest request) {
         // 1. Authenticate the user
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -62,17 +62,17 @@ public class AuthServiceImpl implements AuthService {
 
         // 2. Find user from DB
         var user = repository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found with email: " + request.getEmail()));
 
         // 3. Generate tokens
         var accessToken = jwtService.generateAccessToken(user);
         var refreshToken = jwtService.generateRefreshToken(user);
         
         // 4. Return the DTO
-        return ApiResponse.success("User login successfully", AuthResponse.builder()
+        return AuthResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .user(UserResponse.fromEntity(user))
-                .build());
+                .build();
     }
 }

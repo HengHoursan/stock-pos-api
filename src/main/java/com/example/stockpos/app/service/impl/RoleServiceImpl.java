@@ -2,12 +2,13 @@ package com.example.stockpos.app.service.impl;
 
 import com.example.stockpos.app.dto.requests.PaginationRequest;
 import com.example.stockpos.app.dto.requests.RoleRequest;
-import com.example.stockpos.app.dto.responses.ApiResponse;
 import com.example.stockpos.app.dto.responses.PaginationMeta;
 import com.example.stockpos.app.dto.responses.PaginationResponse;
 import com.example.stockpos.app.dto.responses.RoleResponse;
+import com.example.stockpos.app.exception.RoleNotFoundException;
 import com.example.stockpos.app.models.Permission;
 import com.example.stockpos.app.models.Role;
+import com.example.stockpos.app.models.RolePermission;
 import com.example.stockpos.app.repository.PermissionRepository;
 import com.example.stockpos.app.repository.RoleRepository;
 import com.example.stockpos.app.service.RoleService;
@@ -30,34 +31,33 @@ public class RoleServiceImpl implements RoleService {
     private final PermissionRepository permissionRepository;
 
     @Override
-    public ApiResponse<List<RoleResponse>> findAll() {
-        List<RoleResponse> roles = repository.findAll().stream()
+    public List<RoleResponse> findAll() {
+        return repository.findAll().stream()
                 .map(RoleResponse::fromEntity)
                 .collect(Collectors.toList());
-        return ApiResponse.success("Roles fetched successfully", roles);
     }
 
     @Override
-    public ApiResponse<PaginationResponse<RoleResponse>> findAllWithPagination(PaginationRequest request) {
+    public PaginationResponse<RoleResponse> findAllWithPagination(PaginationRequest request) {
         Pageable pageable = PageRequest.of(
-                request.getPage(), 
-                request.getLimit(), 
+                request.getPage(),
+                request.getLimit(),
                 request.getOrderBy() != null && !request.getOrderBy().isEmpty() ? Sort.by(request.getOrderBy()) : Sort.unsorted()
         );
 
-        Specification<Role> spec = (root, query, criteriaBuilder) -> {
-            var predicates = criteriaBuilder.conjunction();
+        Specification<Role> spec = (root, query, cb) -> {
+            var predicates = cb.conjunction();
 
             if (request.getSearch() != null && !request.getSearch().isEmpty()) {
                 String searchPattern = "%" + request.getSearch().toLowerCase() + "%";
-                predicates = criteriaBuilder.and(predicates, criteriaBuilder.or(
-                        criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), searchPattern),
-                        criteriaBuilder.like(criteriaBuilder.lower(root.get("displayName")), searchPattern)
+                predicates = cb.and(predicates, cb.or(
+                        cb.like(cb.lower(root.get("name")), searchPattern),
+                        cb.like(cb.lower(root.get("displayName")), searchPattern)
                 ));
             }
 
             if (request.getFilters() != null && request.getFilters().containsKey("status")) {
-                predicates = criteriaBuilder.and(predicates, criteriaBuilder.equal(root.get("status"), Boolean.parseBoolean(request.getFilters().get("status"))));
+                predicates = cb.and(predicates, cb.equal(root.get("status"), Boolean.parseBoolean(request.getFilters().get("status"))));
             }
 
             return predicates;
@@ -79,57 +79,67 @@ public class RoleServiceImpl implements RoleService {
                 .limit(rolePage.getSize())
                 .build();
 
-        return ApiResponse.success("Roles fetched successfully", PaginationResponse.<RoleResponse>builder()
+        return PaginationResponse.<RoleResponse>builder()
                 .data(content)
                 .meta(meta)
-                .build());
+                .build();
     }
 
     @Override
-    public ApiResponse<RoleResponse> findById(Integer id) {
-        RoleResponse response = repository.findById(id)
+    public RoleResponse findById(Integer id) {
+        return repository.findById(id)
                 .map(RoleResponse::fromEntity)
-                .orElseThrow(() -> new RuntimeException("Role not found"));
-        return ApiResponse.success("Role fetched successfully", response);
+                .orElseThrow(() -> new RoleNotFoundException(id));
     }
 
     @Override
-    public ApiResponse<RoleResponse> create(RoleRequest.CreateRoleRequest request) {
+    public RoleResponse create(RoleRequest.CreateRoleRequest request) {
         Role role = Role.builder()
                 .name(request.getName())
                 .displayName(request.getDisplayName())
                 .status(request.getStatus())
                 .build();
-        return ApiResponse.success("Role created successfully", RoleResponse.fromEntity(repository.save(role)));
+        return RoleResponse.fromEntity(repository.save(role));
     }
 
     @Override
-    public ApiResponse<RoleResponse> update(Integer id, RoleRequest.UpdateRoleRequest request) {
+    public RoleResponse update(Integer id, RoleRequest.UpdateRoleRequest request) {
         Role role = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Role not found"));
+                .orElseThrow(() -> new RoleNotFoundException(id));
         
         role.setName(request.getName());
         role.setDisplayName(request.getDisplayName());
         role.setStatus(request.getStatus());
         
-        return ApiResponse.success("Role updated successfully", RoleResponse.fromEntity(repository.save(role)));
+        return RoleResponse.fromEntity(repository.save(role));
     }
 
     @Override
-    public ApiResponse<Void> delete(Integer id) {
+    public void delete(Integer id) {
         repository.deleteById(id);
-        return ApiResponse.success("Role deleted successfully", null);
     }
 
     @Override
-    public ApiResponse<RoleResponse> assignPermissions(Integer roleId, List<Integer> permissionIds) {
+    public RoleResponse assignPermissions(Integer roleId, List<Integer> permissionIds) {
         Role role = repository.findById(roleId)
-                .orElseThrow(() -> new RuntimeException("Role not found"));
+                .orElseThrow(() -> new RoleNotFoundException(roleId));
         
         List<Permission> permissions = permissionRepository.findAllById(permissionIds);
-        role.setPermissions(permissions);
         
-        return ApiResponse.success("Permissions assigned successfully", RoleResponse.fromEntity(repository.save(role)));
+        // Clear existing permissions
+        role.getRolePermissions().clear();
+        
+        // Add new permissions
+        List<RolePermission> rolePermissions = permissions.stream()
+                .map(permission -> RolePermission.builder()
+                        .role(role)
+                        .permission(permission)
+                        .build())
+                .collect(Collectors.toList());
+        
+        role.getRolePermissions().addAll(rolePermissions);
+        
+        return RoleResponse.fromEntity(repository.save(role));
     }
 
 }

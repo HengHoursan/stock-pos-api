@@ -26,8 +26,8 @@ public class RoleResponse {
                 .name(role.getName())
                 .displayName(role.getDisplayName())
                 .status(role.getStatus())
-                .permissions(role.getPermissions() != null ? role.getPermissions().stream()
-                        .map(PermissionResponse::fromEntity)
+                .permissions(role.getRolePermissions() != null ? role.getRolePermissions().stream()
+                        .map(rp -> PermissionResponse.fromEntity(rp.getPermission()))
                         .collect(java.util.stream.Collectors.toList()) : null)
                 .build();
     }

@@ -21,14 +21,14 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Authentication")
 public class AuthController {
 
-    private final AuthService Authservice;
+    private final AuthService authService;
 
     @PostMapping("/register")
     @Operation(description = "Create a new user and return access and refresh tokens")
     public ResponseEntity<ApiResponse<AuthResponse>> register(
             @Valid @RequestBody UserRequest.CreateUserRequest request
     ) {
-        return ResponseEntity.ok(Authservice.register(request));
+        return ResponseEntity.ok(ApiResponse.success("User registered successfully", authService.register(request)));
     }
 
     @PostMapping("/login")
@@ -36,6 +36,6 @@ public class AuthController {
     public ResponseEntity<ApiResponse<AuthResponse>> login(
             @Valid @RequestBody AuthRequest request
     ) {
-        return ResponseEntity.ok(Authservice.login(request));
+        return ResponseEntity.ok(ApiResponse.success("User login successfully", authService.login(request)));
     }
 }

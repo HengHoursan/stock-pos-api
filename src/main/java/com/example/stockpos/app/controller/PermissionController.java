@@ -22,36 +22,24 @@ public class PermissionController {
 
     @GetMapping("/all")
     public ResponseEntity<ApiResponse<List<PermissionResponse>>> getAll() {
-        return ResponseEntity.ok(service.findAll());
+        return ResponseEntity.ok(ApiResponse.success("Permissions fetched successfully", service.findAll()));
     }
 
-    @GetMapping("/list")
+    @PostMapping("/list")
     public ResponseEntity<ApiResponse<PaginationResponse<PermissionResponse>>> getAllPaginated(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int limit,
-            @RequestParam(required = false) String search,
-            @RequestParam(required = false) String orderBy
+            @RequestBody PaginationRequest request
     ) {
-        PaginationRequest request = PaginationRequest.builder()
-                .page(page)
-                .limit(limit)
-                .search(search)
-                .orderBy(orderBy)
-                .build();
-
-        return ResponseEntity.ok(service.findAllWithPagination(request));
+        return ResponseEntity.ok(ApiResponse.success("Permissions fetched successfully", service.findAllWithPagination(request)));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<PermissionResponse>> getById(@PathVariable Integer id) {
-        return ResponseEntity.ok(service.findById(id));
+        return ResponseEntity.ok(ApiResponse.success("Permission fetched successfully", service.findById(id)));
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<PermissionResponse>> create(
-            @Valid @RequestBody PermissionRequest.CreatePermissionRequest request
-    ) {
-        return ResponseEntity.ok(service.create(request));
+    public ResponseEntity<ApiResponse<PermissionResponse>> create(@Valid @RequestBody PermissionRequest.CreatePermissionRequest request) {
+        return ResponseEntity.ok(ApiResponse.success("Permission created successfully", service.create(request)));
     }
 
     @PutMapping("/{id}")
@@ -59,11 +47,12 @@ public class PermissionController {
             @PathVariable Integer id,
             @Valid @RequestBody PermissionRequest.UpdatePermissionRequest request
     ) {
-        return ResponseEntity.ok(service.update(id, request));
+        return ResponseEntity.ok(ApiResponse.success("Permission updated successfully", service.update(id, request)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Integer id) {
-        return ResponseEntity.ok(service.delete(id));
+        service.delete(id);
+        return ResponseEntity.ok(ApiResponse.success("Permission deleted successfully", null));
     }
 }

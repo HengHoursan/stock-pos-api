@@ -2,10 +2,10 @@ package com.example.stockpos.app.service.impl;
 
 import com.example.stockpos.app.dto.requests.PaginationRequest;
 import com.example.stockpos.app.dto.requests.PermissionRequest;
-import com.example.stockpos.app.dto.responses.ApiResponse;
 import com.example.stockpos.app.dto.responses.PaginationMeta;
 import com.example.stockpos.app.dto.responses.PaginationResponse;
 import com.example.stockpos.app.dto.responses.PermissionResponse;
+import com.example.stockpos.app.exception.PermissionNotFoundException;
 import com.example.stockpos.app.models.Permission;
 import com.example.stockpos.app.repository.PermissionRepository;
 import com.example.stockpos.app.service.PermissionService;
@@ -27,31 +27,33 @@ public class PermissionServiceImpl implements PermissionService {
     private final PermissionRepository repository;
 
     @Override
-    public ApiResponse<List<PermissionResponse>> findAll() {
-        List<PermissionResponse> permissions = repository.findAll().stream()
+    public List<PermissionResponse> findAll() {
+        return repository.findAll().stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
-        return ApiResponse.success("Permissions fetched successfully", permissions);
     }
 
     @Override
-    public ApiResponse<PaginationResponse<PermissionResponse>> findAllWithPagination(PaginationRequest request) {
+    public PaginationResponse<PermissionResponse> findAllWithPagination(PaginationRequest request) {
         Pageable pageable = PageRequest.of(
-                request.getPage(), 
-                request.getLimit(), 
+                request.getPage(),
+                request.getLimit(),
                 request.getOrderBy() != null && !request.getOrderBy().isEmpty() ? Sort.by(request.getOrderBy()) : Sort.unsorted()
         );
 
-        Specification<Permission> spec = (root, query, criteriaBuilder) -> {
-            if (request.getSearch() == null || request.getSearch().isEmpty()) {
-                return null;
+        Specification<Permission> spec = (root, query, cb) -> {
+            var predicates = cb.conjunction();
+
+            if (request.getSearch() != null && !request.getSearch().isEmpty()) {
+                String searchPattern = "%" + request.getSearch().toLowerCase() + "%";
+                predicates = cb.and(predicates, cb.or(
+                        cb.like(cb.lower(root.get("name")), searchPattern),
+                        cb.like(cb.lower(root.get("displayName")), searchPattern),
+                        cb.like(cb.lower(root.get("group")), searchPattern)
+                ));
             }
-            String searchPattern = "%" + request.getSearch().toLowerCase() + "%";
-            return criteriaBuilder.or(
-                    criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), searchPattern),
-                    criteriaBuilder.like(criteriaBuilder.lower(root.get("displayName")), searchPattern),
-                    criteriaBuilder.like(criteriaBuilder.lower(root.get("group")), searchPattern)
-            );
+
+            return predicates;
         };
 
         Page<Permission> permissionPage = repository.findAll(spec, pageable);
@@ -70,48 +72,46 @@ public class PermissionServiceImpl implements PermissionService {
                 .limit(permissionPage.getSize())
                 .build();
 
-        return ApiResponse.success("Permissions fetched successfully", PaginationResponse.<PermissionResponse>builder()
+        return PaginationResponse.<PermissionResponse>builder()
                 .data(content)
                 .meta(meta)
-                .build());
+                .build();
     }
 
     @Override
-    public ApiResponse<PermissionResponse> findById(Integer id) {
-        PermissionResponse response = repository.findById(id)
+    public PermissionResponse findById(Integer id) {
+        return repository.findById(id)
                 .map(this::mapToResponse)
-                .orElseThrow(() -> new RuntimeException("Permission not found"));
-        return ApiResponse.success("Permission fetched successfully", response);
+                .orElseThrow(() -> new PermissionNotFoundException(id));
     }
 
     @Override
-    public ApiResponse<PermissionResponse> create(PermissionRequest.CreatePermissionRequest request) {
+    public PermissionResponse create(PermissionRequest.CreatePermissionRequest request) {
         Permission permission = Permission.builder()
                 .name(request.getName())
                 .displayName(request.getDisplayName())
                 .group(request.getGroup())
                 .sort(request.getSort())
                 .build();
-        return ApiResponse.success("Permission created successfully", mapToResponse(repository.save(permission)));
+        return mapToResponse(repository.save(permission));
     }
 
     @Override
-    public ApiResponse<PermissionResponse> update(Integer id, PermissionRequest.UpdatePermissionRequest request) {
+    public PermissionResponse update(Integer id, PermissionRequest.UpdatePermissionRequest request) {
         Permission permission = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Permission not found"));
+                .orElseThrow(() -> new PermissionNotFoundException(id));
         
         permission.setName(request.getName());
         permission.setDisplayName(request.getDisplayName());
         permission.setGroup(request.getGroup());
         permission.setSort(request.getSort());
         
-        return ApiResponse.success("Permission updated successfully", mapToResponse(repository.save(permission)));
+        return mapToResponse(repository.save(permission));
     }
 
     @Override
-    public ApiResponse<Void> delete(Integer id) {
+    public void delete(Integer id) {
         repository.deleteById(id);
-        return ApiResponse.success("Permission deleted successfully", null);
     }
 
     private PermissionResponse mapToResponse(Permission permission) {

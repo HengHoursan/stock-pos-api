@@ -12,56 +12,35 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
 public class UserController {
 
-    private final UserService UserService;
+    private final UserService userService;
 
     @GetMapping("/all")
     public ResponseEntity<ApiResponse<List<UserResponse>>> getAll() {
-        return ResponseEntity.ok(UserService.findAll());
+        return ResponseEntity.ok(ApiResponse.success("Users fetched successfully", userService.findAll()));
     }
 
-    @GetMapping("/list")
+    @PostMapping("/list")
     public ResponseEntity<ApiResponse<PaginationResponse<UserResponse>>> getAllPaginated(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int limit,
-            @RequestParam(required = false) String search,
-            @RequestParam(required = false) Boolean status,
-            @RequestParam(required = false) Integer roleId,
-            @RequestParam(required = false) String orderBy
+            @RequestBody PaginationRequest request
     ) {
-        Map<String, String> filters = new HashMap<>();
-        if (status != null) filters.put("status", status.toString());
-        if (roleId != null) filters.put("roleId", roleId.toString());
-
-        PaginationRequest request = PaginationRequest.builder()
-                .page(page)
-                .limit(limit)
-                .search(search)
-                .filters(filters)
-                .orderBy(orderBy)
-                .build();
-
-        return ResponseEntity.ok(UserService.findAllWithPagination(request));
+        return ResponseEntity.ok(ApiResponse.success("Users fetched successfully", userService.findAllWithPagination(request)));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<UserResponse>> getById(@PathVariable Integer id) {
-        return ResponseEntity.ok(UserService.findById(id));
+        return ResponseEntity.ok(ApiResponse.success("User fetched successfully", userService.findById(id)));
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<UserResponse>> create(
-            @Valid @RequestBody UserRequest.CreateUserRequest request
-    ) {
-        return ResponseEntity.ok(UserService.create(request));
+    public ResponseEntity<ApiResponse<UserResponse>> create(@Valid @RequestBody UserRequest.CreateUserRequest request) {
+        return ResponseEntity.ok(ApiResponse.success("User created successfully", userService.create(request)));
     }
 
     @PutMapping("/{id}")
@@ -69,11 +48,12 @@ public class UserController {
             @PathVariable Integer id,
             @Valid @RequestBody UserRequest.UpdateUserRequest request
     ) {
-        return ResponseEntity.ok(UserService.update(id, request));
+        return ResponseEntity.ok(ApiResponse.success("User updated successfully", userService.update(id, request)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Integer id) {
-        return ResponseEntity.ok(UserService.delete(id));
+        userService.delete(id);
+        return ResponseEntity.ok(ApiResponse.success("User deleted successfully", null));
     }
 }

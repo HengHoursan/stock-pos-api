@@ -2,13 +2,15 @@ package com.example.stockpos.app.db.seeds;
 
 import com.example.stockpos.app.models.Permission;
 import com.example.stockpos.app.models.Role;
+import com.example.stockpos.app.models.RolePermission;
 import com.example.stockpos.app.repository.PermissionRepository;
 import com.example.stockpos.app.repository.RoleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -25,8 +27,16 @@ public class RoleSeeder {
                 .name("ADMIN")
                 .displayName("Administrator")
                 .status(true)
-                .permissions(allPermissions)
                 .build();
+            
+            List<RolePermission> adminPermissions = allPermissions.stream()
+                .map(permission -> RolePermission.builder()
+                        .role(adminRole)
+                        .permission(permission)
+                        .build())
+                .collect(Collectors.toList());
+            
+            adminRole.setRolePermissions(adminPermissions);
             roleRepository.save(adminRole);
 
             // USER Role (minimal permissions)
@@ -34,7 +44,7 @@ public class RoleSeeder {
                 .name("USER")
                 .displayName("Standard User")
                 .status(true)
-                .permissions(Collections.emptyList()) // Add specific permissions if needed
+                .rolePermissions(new ArrayList<>())
                 .build();
             roleRepository.save(userRole);
         }
