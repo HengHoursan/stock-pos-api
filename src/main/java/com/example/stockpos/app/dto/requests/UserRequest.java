@@ -32,7 +32,6 @@ public class UserRequest {
         @Builder.Default
         private Boolean status = true;
 
-        @NotNull(message = "Role is required")
         private Integer roleId;
     }
     @Data

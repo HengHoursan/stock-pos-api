@@ -106,8 +106,16 @@ public class UserServiceImpl implements UserService {
             throw new DuplicateResourceException("User with email " + request.getEmail() + " already exists");
         }
 
-        Role role = roleRepository.findById(request.getRoleId())
-                .orElseThrow(() -> new RoleNotFoundException(request.getRoleId()));
+        Integer roleId = request.getRoleId();
+        if (roleId == null) {
+            roleId = roleRepository.findByName("USER")
+                    .map(Role::getId)
+                    .orElseThrow(() -> new RoleNotFoundException("Default role 'USER' not found"));
+        }
+
+        final Integer finalRoleId = roleId;
+        Role role = roleRepository.findById(finalRoleId)
+                .orElseThrow(() -> new RoleNotFoundException(finalRoleId));
 
         User user = User.builder()
                 .username(request.getUsername())

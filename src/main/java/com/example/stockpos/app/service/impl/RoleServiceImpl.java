@@ -107,7 +107,15 @@ public class RoleServiceImpl implements RoleService {
                 .displayName(request.getDisplayName())
                 .status(request.getStatus())
                 .build();
-        return RoleResponse.fromEntity(repository.save(role));
+        
+        Role savedRole = repository.save(role);
+        
+        if (request.getPermissionIds() != null && !request.getPermissionIds().isEmpty()) {
+            assignPermissions(savedRole.getId(), request.getPermissionIds());
+            return findById(savedRole.getId());
+        }
+        
+        return RoleResponse.fromEntity(savedRole);
     }
 
     @Override
@@ -126,7 +134,14 @@ public class RoleServiceImpl implements RoleService {
         role.setDisplayName(request.getDisplayName());
         role.setStatus(request.getStatus());
         
-        return RoleResponse.fromEntity(repository.save(role));
+        Role updatedRole = repository.save(role);
+        
+        if (request.getPermissionIds() != null) {
+            assignPermissions(updatedRole.getId(), request.getPermissionIds());
+            return findById(updatedRole.getId());
+        }
+        
+        return RoleResponse.fromEntity(updatedRole);
     }
 
     @Override

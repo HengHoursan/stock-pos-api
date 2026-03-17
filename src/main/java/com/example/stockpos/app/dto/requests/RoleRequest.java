@@ -8,6 +8,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 
 public class RoleRequest {
 
@@ -27,6 +29,7 @@ public class RoleRequest {
         @NotNull(message = "Status is required")
         private Boolean status;
 
+        private List<Integer> permissionIds;
     }
 
     @Data
@@ -44,5 +47,7 @@ public class RoleRequest {
 
         @NotNull(message = "Status is required")
         private Boolean status;
+
+        private List<Integer> permissionIds;
     }
 }
