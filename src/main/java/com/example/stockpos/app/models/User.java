@@ -76,7 +76,7 @@ public class User implements UserDetails {
 
     @Override
     public String getUsername() {
-        return username;
+        return email;
     }
 
     // Account is always active unless status is false

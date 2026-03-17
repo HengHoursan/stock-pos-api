@@ -13,24 +13,22 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @OpenAPIDefinition(
         info = @Info(
+                title = "Stock POS API",
+                version = "1.0",
+                description = "API documentation for Stock POS System",
                 contact = @Contact(
                         name = "Support",
                         email = "support@example.com"
-                ),
-                description = "OpenAPI documentation for Stock POS System",
-                title = "Stock POS API",
-                version = "1.0"
+                )
         ),
         servers = {
                 @Server(
-                        description = "Local ENV",
+                        description = "Local Environment",
                         url = "http://localhost:8080"
                 )
         },
         security = {
-                @SecurityRequirement(
-                        name = "bearerAuth"
-                )
+                @SecurityRequirement(name = "bearerAuth")
         }
 )
 @SecurityScheme(
@@ -39,7 +37,9 @@ import org.springframework.context.annotation.Configuration;
         scheme = "bearer",
         bearerFormat = "JWT",
         in = SecuritySchemeIn.HEADER,
-        description = "Enter JWT token as: Bearer <token>"
+        description = "Enter your JWT token (without 'Bearer ').\n" +
+                      "Example: eyJhbGciOiJIUzI1NiJ9...\n" +
+                      "The 'Bearer' prefix will be added automatically."
 )
 public class SwaggerConfig {
 }

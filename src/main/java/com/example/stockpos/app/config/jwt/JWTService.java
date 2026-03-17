@@ -29,8 +29,8 @@ public class JWTService {
     @Value("${application.security.jwt.refresh-token.expiration}")
     private long refreshExpiration;
 
-    // Extract username from token
-    public String extractUsername(String token) {
+    // Extract email from token
+    public String extractEmail(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
@@ -46,8 +46,8 @@ public class JWTService {
 
     // Check if token is valid and belongs to the user
     public boolean isTokenValid(String token, UserDetails userDetails) {
-        final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
+        final String email = extractEmail(token);
+        return (email.equals(userDetails.getUsername())) && !isTokenExpired(token);
     }
 
     // Helper to build the JWT token

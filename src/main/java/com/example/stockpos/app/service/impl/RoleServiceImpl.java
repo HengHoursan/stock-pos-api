@@ -6,11 +6,14 @@ import com.example.stockpos.app.dto.responses.PaginationMeta;
 import com.example.stockpos.app.dto.responses.PaginationResponse;
 import com.example.stockpos.app.dto.responses.RoleResponse;
 import com.example.stockpos.app.exception.RoleNotFoundException;
+import com.example.stockpos.app.exception.DuplicateResourceException;
+import com.example.stockpos.app.exception.ResourceInUseException;
 import com.example.stockpos.app.models.Permission;
 import com.example.stockpos.app.models.Role;
 import com.example.stockpos.app.models.RolePermission;
 import com.example.stockpos.app.repository.PermissionRepository;
 import com.example.stockpos.app.repository.RoleRepository;
+import com.example.stockpos.app.repository.UserRepository;
 import com.example.stockpos.app.service.RoleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -29,6 +32,7 @@ public class RoleServiceImpl implements RoleService {
 
     private final RoleRepository repository;
     private final PermissionRepository permissionRepository;
+    private final UserRepository userRepository;
 
     @Override
     public List<RoleResponse> findAll() {
@@ -94,6 +98,10 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public RoleResponse create(RoleRequest.CreateRoleRequest request) {
+        if (repository.existsByName(request.getName())) {
+            throw new DuplicateResourceException("Role with name " + request.getName() + " already exists");
+        }
+
         Role role = Role.builder()
                 .name(request.getName())
                 .displayName(request.getDisplayName())
@@ -107,6 +115,13 @@ public class RoleServiceImpl implements RoleService {
         Role role = repository.findById(id)
                 .orElseThrow(() -> new RoleNotFoundException(id));
         
+        // Check if new name is already taken by another role
+        repository.findByName(request.getName()).ifPresent(existingRole -> {
+            if (!existingRole.getId().equals(id)) {
+                throw new DuplicateResourceException("Role with name " + request.getName() + " already exists");
+            }
+        });
+
         role.setName(request.getName());
         role.setDisplayName(request.getDisplayName());
         role.setStatus(request.getStatus());
@@ -116,6 +131,14 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public void delete(Integer id) {
+        if (!repository.existsById(id)) {
+            throw new RoleNotFoundException(id);
+        }
+
+        if (userRepository.existsByRole_Id(id)) {
+            throw new ResourceInUseException("Cannot delete role because it is currently assigned to users");
+        }
+
         repository.deleteById(id);
     }
 

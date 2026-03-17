@@ -9,6 +9,7 @@ import com.example.stockpos.app.models.User;
 import com.example.stockpos.app.models.Role;
 import com.example.stockpos.app.exception.UserNotFoundException;
 import com.example.stockpos.app.exception.RoleNotFoundException;
+import com.example.stockpos.app.exception.DuplicateResourceException;
 import com.example.stockpos.app.repository.UserRepository;
 import com.example.stockpos.app.repository.RoleRepository;
 import com.example.stockpos.app.service.UserService;
@@ -101,6 +102,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponse create(UserRequest.CreateUserRequest request) {
+        if (repository.existsByEmail(request.getEmail())) {
+            throw new DuplicateResourceException("User with email " + request.getEmail() + " already exists");
+        }
+
         Role role = roleRepository.findById(request.getRoleId())
                 .orElseThrow(() -> new RoleNotFoundException(request.getRoleId()));
 
@@ -120,6 +125,13 @@ public class UserServiceImpl implements UserService {
         User user = repository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
         
+        // Check if new email is already taken by another user
+        repository.findByEmail(request.getEmail()).ifPresent(existingUser -> {
+            if (!existingUser.getId().equals(id)) {
+                throw new DuplicateResourceException("User with email " + request.getEmail() + " already exists");
+            }
+        });
+
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         if (request.getPassword() != null && !request.getPassword().isEmpty()) {
