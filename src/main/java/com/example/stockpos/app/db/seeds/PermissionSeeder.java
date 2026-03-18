@@ -5,7 +5,6 @@ import com.example.stockpos.app.repository.PermissionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
 import java.util.List;
 
 @Component
@@ -15,22 +14,29 @@ public class PermissionSeeder {
 
     public void seed() {
         if (permissionRepository.count() == 0) {
-            List<Permission> permissions = Arrays.asList(
-                // User Management
-                Permission.builder().name("all:user").displayName("All Users").group("User Management").sort(1).build(),
-                Permission.builder().name("view:user").displayName("View Users").group("User Management").sort(2).build(),
-                Permission.builder().name("create:user").displayName("Create User").group("User Management").sort(3).build(),
-                Permission.builder().name("update:user").displayName("Update User").group("User Management").sort(4).build(),
-                Permission.builder().name("delete:user").displayName("Delete User").group("User Management").sort(5).build(),
-                
-                // Role Management
-                Permission.builder().name("all:role").displayName("All Roles").group("Role Management").sort(1).build(),
-                Permission.builder().name("view:role").displayName("View Roles").group("Role Management").sort(2).build(),
-                Permission.builder().name("create:role").displayName("Create Role").group("Role Management").sort(3).build(),
-                Permission.builder().name("update:role").displayName("Update Role").group("Role Management").sort(4).build(),
-                Permission.builder().name("delete:role").displayName("Delete Role").group("Role Management").sort(5).build()
-            );
-            permissionRepository.saveAll(permissions);
+            seedEntityPermissions("User", "user");
+            seedEntityPermissions("Role", "role");
+            seedEntityPermissions("Permission", "permission");
         }
+    }
+
+    private void seedEntityPermissions(String displayName, String name) {
+        String group = displayName + " Management";
+        permissionRepository.saveAll(List.of(
+            buildPermission("all:" + name, "All " + displayName + "s", group, 1),
+            buildPermission("view:" + name, "View " + displayName + "s", group, 2),
+            buildPermission("create:" + name, "Create " + displayName, group, 3),
+            buildPermission("update:" + name, "Update " + displayName, group, 4),
+            buildPermission("delete:" + name, "Delete " + displayName, group, 5)
+        ));
+    }
+
+    private Permission buildPermission(String name, String displayName, String group, Integer sort) {
+        return Permission.builder()
+                .name(name)
+                .displayName(displayName)
+                .group(group)
+                .sort(sort)
+                .build();
     }
 }
