@@ -8,7 +8,10 @@ import com.example.stockpos.app.dto.user.response.UserResponse;
 import com.example.stockpos.app.models.User;
 import com.example.stockpos.app.repository.UserRepository;
 import com.example.stockpos.app.repository.RoleRepository;
+import com.example.stockpos.app.repository.TokenBlacklistRepository;
 import com.example.stockpos.app.service.AuthService;
+import com.example.stockpos.app.models.TokenBlacklist;
+import java.time.LocalDateTime;
 import com.example.stockpos.app.exception.UserNotFoundException;
 import com.example.stockpos.app.exception.RoleNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +28,7 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JWTService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final TokenBlacklistRepository tokenBlacklistRepository;
 
     @Override
     public AuthResponse register(UserRequest.CreateUserRequest request) {
@@ -74,5 +78,13 @@ public class AuthServiceImpl implements AuthService {
                 .refreshToken(refreshToken)
                 .user(UserResponse.fromEntity(user))
                 .build();
+    }
+
+    @Override
+    public void logout(String token) {
+        tokenBlacklistRepository.save(TokenBlacklist.builder()
+                .token(token)
+                .blacklistedAt(LocalDateTime.now())
+                .build());
     }
 }

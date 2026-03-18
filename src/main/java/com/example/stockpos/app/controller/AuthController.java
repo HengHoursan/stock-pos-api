@@ -7,6 +7,7 @@ import com.example.stockpos.app.dto.auth.response.AuthResponse;
 import com.example.stockpos.app.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -37,5 +38,16 @@ public class AuthController {
             @Valid @RequestBody AuthRequest request
     ) {
         return ResponseEntity.ok(ApiResponse.success("User login successfully", authService.login(request)));
+    }
+
+    @PostMapping("/logout")
+    @Operation(description = "Logout user (invalidates the token immediately on the server)")
+    public ResponseEntity<ApiResponse<Void>> logout(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String jwt = authHeader.substring(7);
+            authService.logout(jwt);
+        }
+        return ResponseEntity.ok(ApiResponse.success("User logged out successfully.", null));
     }
 }

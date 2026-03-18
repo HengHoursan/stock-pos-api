@@ -12,6 +12,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
+import com.example.stockpos.app.repository.TokenBlacklistRepository;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -22,6 +23,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JWTService jwtService;
     private final UserDetailsService userDetailsService;
+    private final TokenBlacklistRepository tokenBlacklistRepository;
 
     @Override
     protected void doFilterInternal(
@@ -44,6 +46,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // Safely handle accidental double "Bearer " (e.g. from Swagger pastes)
             if (jwt.startsWith("Bearer ")) {
                 jwt = jwt.substring(7);
+            }
+            
+            // Reject the token if it has been blacklisted (logged out)
+            if (tokenBlacklistRepository.existsById(jwt)) {
+                filterChain.doFilter(request, response);
+                return;
             }
             
             email = jwtService.extractEmail(jwt);

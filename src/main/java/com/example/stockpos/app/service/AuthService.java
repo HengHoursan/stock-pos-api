@@ -7,4 +7,5 @@ import com.example.stockpos.app.dto.auth.response.AuthResponse;
 public interface AuthService {
     AuthResponse register(UserRequest.CreateUserRequest request);
     AuthResponse login (AuthRequest request);
+    void logout(String token);
 }
