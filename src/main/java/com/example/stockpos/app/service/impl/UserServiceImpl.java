@@ -1,10 +1,10 @@
 package com.example.stockpos.app.service.impl;
 
-import com.example.stockpos.app.dto.requests.PaginationRequest;
-import com.example.stockpos.app.dto.requests.UserRequest;
-import com.example.stockpos.app.dto.responses.PaginationMeta;
-import com.example.stockpos.app.dto.responses.PaginationResponse;
-import com.example.stockpos.app.dto.responses.UserResponse;
+import com.example.stockpos.app.dto.common.request.PaginationRequest;
+import com.example.stockpos.app.dto.user.request.UserRequest;
+import com.example.stockpos.app.dto.common.response.PaginationMeta;
+import com.example.stockpos.app.dto.common.response.PaginationResponse;
+import com.example.stockpos.app.dto.user.response.UserResponse;
 import com.example.stockpos.app.exception.DuplicateResourceException;
 import com.example.stockpos.app.exception.RoleNotFoundException;
 import com.example.stockpos.app.exception.UserNotFoundException;

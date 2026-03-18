@@ -1,4 +1,4 @@
-package com.example.stockpos.app.dto.requests;
+package com.example.stockpos.app.dto.auth.request;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;

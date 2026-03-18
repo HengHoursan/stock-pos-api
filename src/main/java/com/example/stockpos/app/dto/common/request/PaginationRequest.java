@@ -1,4 +1,4 @@
-package com.example.stockpos.app.dto.requests;
+package com.example.stockpos.app.dto.common.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,11 +1,12 @@
 
 package com.example.stockpos.app.controller;
 
-import com.example.stockpos.app.dto.requests.PaginationRequest;
-import com.example.stockpos.app.dto.requests.UserRequest;
-import com.example.stockpos.app.dto.responses.ApiResponse;
-import com.example.stockpos.app.dto.responses.PaginationResponse;
-import com.example.stockpos.app.dto.responses.UserResponse;
+import com.example.stockpos.app.dto.common.request.IdRequest;
+import com.example.stockpos.app.dto.common.request.PaginationRequest;
+import com.example.stockpos.app.dto.user.request.UserRequest;
+import com.example.stockpos.app.dto.common.response.ApiResponse;
+import com.example.stockpos.app.dto.common.response.PaginationResponse;
+import com.example.stockpos.app.dto.user.response.UserResponse;
 import com.example.stockpos.app.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -35,9 +36,9 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.success("Users fetched successfully", userService.findAllWithPagination(request)));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<UserResponse>> getById(@PathVariable Integer id) {
-        return ResponseEntity.ok(ApiResponse.success("User fetched successfully", userService.findById(id)));
+    @PostMapping("/detail")
+    public ResponseEntity<ApiResponse<UserResponse>> getById(@Valid @RequestBody IdRequest request) {
+        return ResponseEntity.ok(ApiResponse.success("User fetched successfully", userService.findById(request.getId())));
     }
 
     @PostMapping
@@ -45,17 +46,14 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.success("User created successfully", userService.create(request)));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<UserResponse>> update(
-            @PathVariable Integer id,
-            @Valid @RequestBody UserRequest.UpdateUserRequest request
-    ) {
-        return ResponseEntity.ok(ApiResponse.success("User updated successfully", userService.update(id, request)));
+    @PutMapping
+    public ResponseEntity<ApiResponse<UserResponse>> update(@Valid @RequestBody UserRequest.UpdateUserRequest request) {
+        return ResponseEntity.ok(ApiResponse.success("User updated successfully", userService.update(request.getId(), request)));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Integer id) {
-        userService.delete(id);
+    @DeleteMapping
+    public ResponseEntity<ApiResponse<Void>> delete(@Valid @RequestBody IdRequest request) {
+        userService.delete(request.getId());
         return ResponseEntity.ok(ApiResponse.success("User deleted successfully", null));
     }
 }

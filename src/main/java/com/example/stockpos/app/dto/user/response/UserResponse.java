@@ -1,5 +1,6 @@
-package com.example.stockpos.app.dto.responses;
+package com.example.stockpos.app.dto.user.response;
 
+import com.example.stockpos.app.dto.role.response.RoleResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

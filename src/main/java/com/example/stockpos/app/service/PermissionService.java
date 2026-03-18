@@ -1,9 +1,9 @@
 package com.example.stockpos.app.service;
 
-import com.example.stockpos.app.dto.requests.PaginationRequest;
-import com.example.stockpos.app.dto.requests.PermissionRequest;
-import com.example.stockpos.app.dto.responses.PaginationResponse;
-import com.example.stockpos.app.dto.responses.PermissionResponse;
+import com.example.stockpos.app.dto.common.request.PaginationRequest;
+import com.example.stockpos.app.dto.permission.request.PermissionRequest;
+import com.example.stockpos.app.dto.common.response.PaginationResponse;
+import com.example.stockpos.app.dto.permission.response.PermissionResponse;
 
 import java.util.List;
 

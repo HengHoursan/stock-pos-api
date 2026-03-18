@@ -1,4 +1,4 @@
-package com.example.stockpos.app.dto.requests;
+package com.example.stockpos.app.dto.user.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -39,6 +39,9 @@ public class UserRequest {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class UpdateUserRequest {
+        @NotNull(message = "ID is required")
+        private Integer id;
+
         @NotBlank(message = "Username is required")
         @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
         private String username;

@@ -1,10 +1,10 @@
 package com.example.stockpos.app.service.impl;
 
-import com.example.stockpos.app.dto.requests.PaginationRequest;
-import com.example.stockpos.app.dto.requests.PermissionRequest;
-import com.example.stockpos.app.dto.responses.PaginationMeta;
-import com.example.stockpos.app.dto.responses.PaginationResponse;
-import com.example.stockpos.app.dto.responses.PermissionResponse;
+import com.example.stockpos.app.dto.common.request.PaginationRequest;
+import com.example.stockpos.app.dto.permission.request.PermissionRequest;
+import com.example.stockpos.app.dto.common.response.PaginationMeta;
+import com.example.stockpos.app.dto.common.response.PaginationResponse;
+import com.example.stockpos.app.dto.permission.response.PermissionResponse;
 import com.example.stockpos.app.exception.DuplicateResourceException;
 import com.example.stockpos.app.exception.PermissionNotFoundException;
 import com.example.stockpos.app.exception.ResourceInUseException;

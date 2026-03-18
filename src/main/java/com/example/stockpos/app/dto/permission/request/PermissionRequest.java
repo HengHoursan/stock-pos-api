@@ -1,4 +1,4 @@
-package com.example.stockpos.app.dto.requests;
+package com.example.stockpos.app.dto.permission.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -39,6 +39,9 @@ public class PermissionRequest {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class UpdatePermissionRequest {
+        @NotNull(message = "ID is required")
+        private Integer id;
+
         @NotBlank(message = "Name is required")
         @Size(max = 50, message = "Name cannot exceed 50 characters")
         private String name;

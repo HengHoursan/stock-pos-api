@@ -1,4 +1,4 @@
-package com.example.stockpos.app.dto.responses;
+package com.example.stockpos.app.dto.common.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

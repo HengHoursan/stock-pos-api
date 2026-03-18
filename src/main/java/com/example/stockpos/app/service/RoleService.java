@@ -1,9 +1,9 @@
 package com.example.stockpos.app.service;
 
-import com.example.stockpos.app.dto.requests.PaginationRequest;
-import com.example.stockpos.app.dto.requests.RoleRequest;
-import com.example.stockpos.app.dto.responses.PaginationResponse;
-import com.example.stockpos.app.dto.responses.RoleResponse;
+import com.example.stockpos.app.dto.common.request.PaginationRequest;
+import com.example.stockpos.app.dto.role.request.RoleRequest;
+import com.example.stockpos.app.dto.common.response.PaginationResponse;
+import com.example.stockpos.app.dto.role.response.RoleResponse;
 import java.util.List;
 
 public interface RoleService {

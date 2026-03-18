@@ -1,4 +1,4 @@
-package com.example.stockpos.app.dto.requests;
+package com.example.stockpos.app.dto.role.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -37,6 +37,9 @@ public class RoleRequest {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class UpdateRoleRequest {
+        @NotNull(message = "ID is required")
+        private Integer id;
+
         @NotBlank(message = "Role name is required")
         @Size(max = 50, message = "Role name cannot exceed 50 characters")
         private String name;

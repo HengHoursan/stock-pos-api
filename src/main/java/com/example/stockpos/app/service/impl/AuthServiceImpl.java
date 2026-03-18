@@ -1,10 +1,10 @@
 package com.example.stockpos.app.service.impl;
 
 import com.example.stockpos.app.config.jwt.JWTService;
-import com.example.stockpos.app.dto.requests.AuthRequest;
-import com.example.stockpos.app.dto.requests.UserRequest;
-import com.example.stockpos.app.dto.responses.AuthResponse;
-import com.example.stockpos.app.dto.responses.UserResponse;
+import com.example.stockpos.app.dto.auth.request.AuthRequest;
+import com.example.stockpos.app.dto.user.request.UserRequest;
+import com.example.stockpos.app.dto.auth.response.AuthResponse;
+import com.example.stockpos.app.dto.user.response.UserResponse;
 import com.example.stockpos.app.models.User;
 import com.example.stockpos.app.repository.UserRepository;
 import com.example.stockpos.app.repository.RoleRepository;

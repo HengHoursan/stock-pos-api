@@ -1,10 +1,11 @@
 package com.example.stockpos.app.controller;
 
-import com.example.stockpos.app.dto.requests.PaginationRequest;
-import com.example.stockpos.app.dto.requests.PermissionRequest;
-import com.example.stockpos.app.dto.responses.ApiResponse;
-import com.example.stockpos.app.dto.responses.PaginationResponse;
-import com.example.stockpos.app.dto.responses.PermissionResponse;
+import com.example.stockpos.app.dto.common.request.IdRequest;
+import com.example.stockpos.app.dto.common.request.PaginationRequest;
+import com.example.stockpos.app.dto.permission.request.PermissionRequest;
+import com.example.stockpos.app.dto.common.response.ApiResponse;
+import com.example.stockpos.app.dto.common.response.PaginationResponse;
+import com.example.stockpos.app.dto.permission.response.PermissionResponse;
 import com.example.stockpos.app.service.PermissionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -35,9 +36,9 @@ public class PermissionController {
         return ResponseEntity.ok(ApiResponse.success("Permissions fetched successfully", service.findAllWithPagination(request)));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<PermissionResponse>> getById(@PathVariable Integer id) {
-        return ResponseEntity.ok(ApiResponse.success("Permission fetched successfully", service.findById(id)));
+    @PostMapping("/detail")
+    public ResponseEntity<ApiResponse<PermissionResponse>> getById(@Valid @RequestBody IdRequest request) {
+        return ResponseEntity.ok(ApiResponse.success("Permission fetched successfully", service.findById(request.getId())));
     }
 
     @PostMapping
@@ -45,17 +46,14 @@ public class PermissionController {
         return ResponseEntity.ok(ApiResponse.success("Permission created successfully", service.create(request)));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PermissionResponse>> update(
-            @PathVariable Integer id,
-            @Valid @RequestBody PermissionRequest.UpdatePermissionRequest request
-    ) {
-        return ResponseEntity.ok(ApiResponse.success("Permission updated successfully", service.update(id, request)));
+    @PutMapping
+    public ResponseEntity<ApiResponse<PermissionResponse>> update(@Valid @RequestBody PermissionRequest.UpdatePermissionRequest request) {
+        return ResponseEntity.ok(ApiResponse.success("Permission updated successfully", service.update(request.getId(), request)));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Integer id) {
-        service.delete(id);
+    @DeleteMapping
+    public ResponseEntity<ApiResponse<Void>> delete(@Valid @RequestBody IdRequest request) {
+        service.delete(request.getId());
         return ResponseEntity.ok(ApiResponse.success("Permission deleted successfully", null));
     }
 }

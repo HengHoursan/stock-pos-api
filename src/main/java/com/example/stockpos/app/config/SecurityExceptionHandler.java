@@ -1,6 +1,6 @@
 package com.example.stockpos.app.config;
 
-import com.example.stockpos.app.dto.responses.ApiResponse;
+import com.example.stockpos.app.dto.common.response.ApiResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

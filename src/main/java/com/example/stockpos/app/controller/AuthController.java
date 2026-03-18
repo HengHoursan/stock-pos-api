@@ -1,9 +1,9 @@
 package com.example.stockpos.app.controller;
 
-import com.example.stockpos.app.dto.requests.AuthRequest;
-import com.example.stockpos.app.dto.requests.UserRequest;
-import com.example.stockpos.app.dto.responses.ApiResponse;
-import com.example.stockpos.app.dto.responses.AuthResponse;
+import com.example.stockpos.app.dto.auth.request.AuthRequest;
+import com.example.stockpos.app.dto.user.request.UserRequest;
+import com.example.stockpos.app.dto.common.response.ApiResponse;
+import com.example.stockpos.app.dto.auth.response.AuthResponse;
 import com.example.stockpos.app.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

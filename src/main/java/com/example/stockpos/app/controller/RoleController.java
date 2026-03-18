@@ -1,10 +1,12 @@
 package com.example.stockpos.app.controller;
 
-import com.example.stockpos.app.dto.requests.PaginationRequest;
-import com.example.stockpos.app.dto.requests.RoleRequest;
-import com.example.stockpos.app.dto.responses.ApiResponse;
-import com.example.stockpos.app.dto.responses.PaginationResponse;
-import com.example.stockpos.app.dto.responses.RoleResponse;
+import com.example.stockpos.app.dto.common.request.IdRequest;
+import com.example.stockpos.app.dto.common.request.PaginationRequest;
+import com.example.stockpos.app.dto.role.request.RolePermissionRequest;
+import com.example.stockpos.app.dto.role.request.RoleRequest;
+import com.example.stockpos.app.dto.common.response.ApiResponse;
+import com.example.stockpos.app.dto.common.response.PaginationResponse;
+import com.example.stockpos.app.dto.role.response.RoleResponse;
 import com.example.stockpos.app.service.RoleService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -34,9 +36,9 @@ public class RoleController {
         return ResponseEntity.ok(ApiResponse.success("Roles fetched successfully", service.findAllWithPagination(request)));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<RoleResponse>> getById(@PathVariable Integer id) {
-        return ResponseEntity.ok(ApiResponse.success("Role fetched successfully", service.findById(id)));
+    @PostMapping("/detail")
+    public ResponseEntity<ApiResponse<RoleResponse>> getById(@Valid @RequestBody IdRequest request) {
+        return ResponseEntity.ok(ApiResponse.success("Role fetched successfully", service.findById(request.getId())));
     }
 
     @PostMapping
@@ -44,25 +46,19 @@ public class RoleController {
         return ResponseEntity.ok(ApiResponse.success("Role created successfully", service.create(request)));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<RoleResponse>> update(
-            @PathVariable Integer id,
-            @Valid @RequestBody RoleRequest.UpdateRoleRequest request
-    ) {
-        return ResponseEntity.ok(ApiResponse.success("Role updated successfully", service.update(id, request)));
+    @PutMapping
+    public ResponseEntity<ApiResponse<RoleResponse>> update(@Valid @RequestBody RoleRequest.UpdateRoleRequest request) {
+        return ResponseEntity.ok(ApiResponse.success("Role updated successfully", service.update(request.getId(), request)));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Integer id) {
-        service.delete(id);
+    @DeleteMapping
+    public ResponseEntity<ApiResponse<Void>> delete(@Valid @RequestBody IdRequest request) {
+        service.delete(request.getId());
         return ResponseEntity.ok(ApiResponse.success("Role deleted successfully", null));
     }
 
-    @PostMapping("/{id}/permissions")
-    public ResponseEntity<ApiResponse<RoleResponse>> assignPermissions(
-            @PathVariable Integer id,
-            @RequestBody List<Integer> permissionIds
-    ) {
-        return ResponseEntity.ok(ApiResponse.success("Permissions assigned successfully", service.assignPermissions(id, permissionIds)));
+    @PostMapping("/permissions")
+    public ResponseEntity<ApiResponse<RoleResponse>> assignPermissions(@Valid @RequestBody RolePermissionRequest request) {
+        return ResponseEntity.ok(ApiResponse.success("Permissions assigned successfully", service.assignPermissions(request.getRoleId(), request.getPermissionIds())));
     }
 }
