@@ -5,8 +5,8 @@ import com.example.stockpos.app.dto.requests.PermissionRequest;
 import com.example.stockpos.app.dto.responses.PaginationMeta;
 import com.example.stockpos.app.dto.responses.PaginationResponse;
 import com.example.stockpos.app.dto.responses.PermissionResponse;
-import com.example.stockpos.app.exception.PermissionNotFoundException;
 import com.example.stockpos.app.exception.DuplicateResourceException;
+import com.example.stockpos.app.exception.PermissionNotFoundException;
 import com.example.stockpos.app.exception.ResourceInUseException;
 import com.example.stockpos.app.models.Permission;
 import com.example.stockpos.app.repository.PermissionRepository;
@@ -14,9 +14,6 @@ import com.example.stockpos.app.repository.RolePermissionRepository;
 import com.example.stockpos.app.service.PermissionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -39,46 +36,23 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     public PaginationResponse<PermissionResponse> findAllWithPagination(PaginationRequest request) {
-        Pageable pageable = PageRequest.of(
-                request.getPage(),
-                request.getLimit(),
-                request.getOrderBy() != null && !request.getOrderBy().isEmpty() ? Sort.by(request.getOrderBy()) : Sort.unsorted()
-        );
+        // Build filters dynamically
+        Specification<Permission> spec = (root, query, cb) -> cb.conjunction();
 
-        Specification<Permission> spec = (root, query, cb) -> {
-            var predicates = cb.conjunction();
+        if (request.getSearch() != null && !request.getSearch().isEmpty()) {
+            String keyword = "%" + request.getSearch().toLowerCase() + "%";
+            spec = spec.and((root, query, cb) -> cb.or(
+                    cb.like(cb.lower(root.get("name")), keyword),
+                    cb.like(cb.lower(root.get("displayName")), keyword),
+                    cb.like(cb.lower(root.get("group")), keyword)
+            ));
+        }
 
-            if (request.getSearch() != null && !request.getSearch().isEmpty()) {
-                String searchPattern = "%" + request.getSearch().toLowerCase() + "%";
-                predicates = cb.and(predicates, cb.or(
-                        cb.like(cb.lower(root.get("name")), searchPattern),
-                        cb.like(cb.lower(root.get("displayName")), searchPattern),
-                        cb.like(cb.lower(root.get("group")), searchPattern)
-                ));
-            }
-
-            return predicates;
-        };
-
-        Page<Permission> permissionPage = repository.findAll(spec, pageable);
-        List<PermissionResponse> content = permissionPage.getContent().stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
-
-        int from = (int) permissionPage.getPageable().getOffset() + 1;
-        int to = from + permissionPage.getNumberOfElements() - 1;
-
-        PaginationMeta meta = PaginationMeta.builder()
-                .total(permissionPage.getTotalElements())
-                .from(permissionPage.getNumberOfElements() > 0 ? from : 0)
-                .to(permissionPage.getNumberOfElements() > 0 ? to : 0)
-                .page(permissionPage.getNumber())
-                .limit(permissionPage.getSize())
-                .build();
-
+        // Fetch and return
+        Page<Permission> page = repository.findAll(spec, request.toPageable());
         return PaginationResponse.<PermissionResponse>builder()
-                .data(content)
-                .meta(meta)
+                .data(page.getContent().stream().map(this::mapToResponse).collect(Collectors.toList()))
+                .meta(PaginationMeta.fromPage(page))
                 .build();
     }
 

@@ -2,22 +2,19 @@ package com.example.stockpos.app.service.impl;
 
 import com.example.stockpos.app.dto.requests.PaginationRequest;
 import com.example.stockpos.app.dto.requests.UserRequest;
-import com.example.stockpos.app.dto.responses.UserResponse;
 import com.example.stockpos.app.dto.responses.PaginationMeta;
 import com.example.stockpos.app.dto.responses.PaginationResponse;
-import com.example.stockpos.app.models.User;
-import com.example.stockpos.app.models.Role;
-import com.example.stockpos.app.exception.UserNotFoundException;
-import com.example.stockpos.app.exception.RoleNotFoundException;
+import com.example.stockpos.app.dto.responses.UserResponse;
 import com.example.stockpos.app.exception.DuplicateResourceException;
-import com.example.stockpos.app.repository.UserRepository;
+import com.example.stockpos.app.exception.RoleNotFoundException;
+import com.example.stockpos.app.exception.UserNotFoundException;
+import com.example.stockpos.app.models.Role;
+import com.example.stockpos.app.models.User;
 import com.example.stockpos.app.repository.RoleRepository;
+import com.example.stockpos.app.repository.UserRepository;
 import com.example.stockpos.app.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -42,54 +39,33 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public PaginationResponse<UserResponse> findAllWithPagination(PaginationRequest request) {
-        Pageable pageable = PageRequest.of(
-                request.getPage(), 
-                request.getLimit(), 
-                request.getOrderBy() != null && !request.getOrderBy().isEmpty() ? Sort.by(request.getOrderBy()) : Sort.unsorted()
-        );
+        // Build filters dynamically
+        Specification<User> spec = (root, query, cb) -> cb.conjunction();
 
-        Specification<User> spec = (root, query, criteriaBuilder) -> {
-            var predicates = criteriaBuilder.conjunction();
+        if (request.getSearch() != null && !request.getSearch().isEmpty()) {
+            String keyword = "%" + request.getSearch().toLowerCase() + "%";
+            spec = spec.and((root, query, cb) -> cb.or(
+                    cb.like(cb.lower(root.get("username")), keyword),
+                    cb.like(cb.lower(root.get("email")), keyword)
+            ));
+        }
 
-            if (request.getSearch() != null && !request.getSearch().isEmpty()) {
-                String searchPattern = "%" + request.getSearch().toLowerCase() + "%";
-                predicates = criteriaBuilder.and(predicates, criteriaBuilder.or(
-                        criteriaBuilder.like(criteriaBuilder.lower(root.get("username")), searchPattern),
-                        criteriaBuilder.like(criteriaBuilder.lower(root.get("email")), searchPattern)
-                ));
+        if (request.getFilters() != null) {
+            if (request.getFilters().containsKey("status")) {
+                boolean isActive = Boolean.parseBoolean(request.getFilters().get("status"));
+                spec = spec.and((root, query, cb) -> cb.equal(root.get("status"), isActive));
             }
-
-            if (request.getFilters() != null) {
-                if (request.getFilters().containsKey("status")) {
-                    predicates = criteriaBuilder.and(predicates, criteriaBuilder.equal(root.get("status"), Boolean.parseBoolean(request.getFilters().get("status"))));
-                }
-                if (request.getFilters().containsKey("roleId")) {
-                    predicates = criteriaBuilder.and(predicates, criteriaBuilder.equal(root.get("role").get("id"), Integer.parseInt(request.getFilters().get("roleId"))));
-                }
+            if (request.getFilters().containsKey("roleId")) {
+                int roleId = Integer.parseInt(request.getFilters().get("roleId"));
+                spec = spec.and((root, query, cb) -> cb.equal(root.get("role").get("id"), roleId));
             }
+        }
 
-            return predicates;
-        };
-
-        Page<User> userPage = repository.findAll(spec, pageable);
-        List<UserResponse> content = userPage.getContent().stream()
-                .map(UserResponse::fromEntity)
-                .collect(Collectors.toList());
-
-        int from = (int) userPage.getPageable().getOffset() + 1;
-        int to = from + userPage.getNumberOfElements() - 1;
-
-        PaginationMeta meta = PaginationMeta.builder()
-                .total(userPage.getTotalElements())
-                .from(userPage.getNumberOfElements() > 0 ? from : 0)
-                .to(userPage.getNumberOfElements() > 0 ? to : 0)
-                .page(userPage.getNumber())
-                .limit(userPage.getSize())
-                .build();
-
+        // Fetch and return
+        Page<User> page = repository.findAll(spec, request.toPageable());
         return PaginationResponse.<UserResponse>builder()
-                .data(content)
-                .meta(meta)
+                .data(page.getContent().stream().map(UserResponse::fromEntity).collect(Collectors.toList()))
+                .meta(PaginationMeta.fromPage(page))
                 .build();
     }
 

@@ -5,9 +5,9 @@ import com.example.stockpos.app.dto.requests.RoleRequest;
 import com.example.stockpos.app.dto.responses.PaginationMeta;
 import com.example.stockpos.app.dto.responses.PaginationResponse;
 import com.example.stockpos.app.dto.responses.RoleResponse;
-import com.example.stockpos.app.exception.RoleNotFoundException;
 import com.example.stockpos.app.exception.DuplicateResourceException;
 import com.example.stockpos.app.exception.ResourceInUseException;
+import com.example.stockpos.app.exception.RoleNotFoundException;
 import com.example.stockpos.app.models.Permission;
 import com.example.stockpos.app.models.Role;
 import com.example.stockpos.app.models.RolePermission;
@@ -17,9 +17,6 @@ import com.example.stockpos.app.repository.UserRepository;
 import com.example.stockpos.app.service.RoleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -43,49 +40,27 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public PaginationResponse<RoleResponse> findAllWithPagination(PaginationRequest request) {
-        Pageable pageable = PageRequest.of(
-                request.getPage(),
-                request.getLimit(),
-                request.getOrderBy() != null && !request.getOrderBy().isEmpty() ? Sort.by(request.getOrderBy()) : Sort.unsorted()
-        );
+        // Build filters dynamically
+        Specification<Role> spec = (root, query, cb) -> cb.conjunction();
 
-        Specification<Role> spec = (root, query, cb) -> {
-            var predicates = cb.conjunction();
+        if (request.getSearch() != null && !request.getSearch().isEmpty()) {
+            String keyword = "%" + request.getSearch().toLowerCase() + "%";
+            spec = spec.and((root, query, cb) -> cb.or(
+                    cb.like(cb.lower(root.get("name")), keyword),
+                    cb.like(cb.lower(root.get("displayName")), keyword)
+            ));
+        }
 
-            if (request.getSearch() != null && !request.getSearch().isEmpty()) {
-                String searchPattern = "%" + request.getSearch().toLowerCase() + "%";
-                predicates = cb.and(predicates, cb.or(
-                        cb.like(cb.lower(root.get("name")), searchPattern),
-                        cb.like(cb.lower(root.get("displayName")), searchPattern)
-                ));
-            }
+        if (request.getFilters() != null && request.getFilters().containsKey("status")) {
+            boolean isActive = Boolean.parseBoolean(request.getFilters().get("status"));
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("status"), isActive));
+        }
 
-            if (request.getFilters() != null && request.getFilters().containsKey("status")) {
-                predicates = cb.and(predicates, cb.equal(root.get("status"), Boolean.parseBoolean(request.getFilters().get("status"))));
-            }
-
-            return predicates;
-        };
-
-        Page<Role> rolePage = repository.findAll(spec, pageable);
-        List<RoleResponse> content = rolePage.getContent().stream()
-                .map(RoleResponse::fromEntity)
-                .collect(Collectors.toList());
-
-        int from = (int) rolePage.getPageable().getOffset() + 1;
-        int to = from + rolePage.getNumberOfElements() - 1;
-
-        PaginationMeta meta = PaginationMeta.builder()
-                .total(rolePage.getTotalElements())
-                .from(rolePage.getNumberOfElements() > 0 ? from : 0)
-                .to(rolePage.getNumberOfElements() > 0 ? to : 0)
-                .page(rolePage.getNumber())
-                .limit(rolePage.getSize())
-                .build();
-
+        // Fetch and return
+        Page<Role> page = repository.findAll(spec, request.toPageable());
         return PaginationResponse.<RoleResponse>builder()
-                .data(content)
-                .meta(meta)
+                .data(page.getContent().stream().map(RoleResponse::fromEntity).collect(Collectors.toList()))
+                .meta(PaginationMeta.fromPage(page))
                 .build();
     }
 
