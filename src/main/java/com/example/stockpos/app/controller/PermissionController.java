@@ -24,7 +24,7 @@ public class PermissionController {
 
     private final PermissionService service;
 
-    @GetMapping("/all")
+    @PostMapping("/all")
     public ResponseEntity<ApiResponse<List<PermissionResponse>>> getAll() {
         return ResponseEntity.ok(ApiResponse.success("Permissions fetched successfully", service.findAll()));
     }
@@ -41,17 +41,17 @@ public class PermissionController {
         return ResponseEntity.ok(ApiResponse.success("Permission fetched successfully", service.findById(request.getId())));
     }
 
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<ApiResponse<PermissionResponse>> create(@Valid @RequestBody PermissionRequest.CreatePermissionRequest request) {
         return ResponseEntity.ok(ApiResponse.success("Permission created successfully", service.create(request)));
     }
 
-    @PutMapping
+    @PostMapping("/update")
     public ResponseEntity<ApiResponse<PermissionResponse>> update(@Valid @RequestBody PermissionRequest.UpdatePermissionRequest request) {
         return ResponseEntity.ok(ApiResponse.success("Permission updated successfully", service.update(request.getId(), request)));
     }
 
-    @DeleteMapping
+    @PostMapping("/delete")
     public ResponseEntity<ApiResponse<Void>> delete(@Valid @RequestBody IdRequest request) {
         service.delete(request.getId());
         return ResponseEntity.ok(ApiResponse.success("Permission deleted successfully", null));

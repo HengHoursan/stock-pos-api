@@ -3,7 +3,6 @@ package com.example.stockpos.app.config;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
-import io.swagger.v3.oas.annotations.info.Contact;
 import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
@@ -15,17 +14,15 @@ import org.springframework.context.annotation.Configuration;
         info = @Info(
                 title = "Stock POS API",
                 version = "1.0",
-                description = "API documentation for Stock POS System",
-                contact = @Contact(
-                        name = "Support",
-                        email = "support@example.com"
-                )
+                description = """
+                        ### Authentication Guide
+                        This API uses JWT (JSON Web Tokens) for security. 
+                        1. Login via the `/api/v1/auth/login` endpoint.
+                        2. Copy the `accessToken` from the response.
+                        3. Click the **Authorize** button and paste the token."""
         ),
         servers = {
-                @Server(
-                        description = "Local Environment",
-                        url = "http://localhost:8080"
-                )
+                @Server(description = "Local Dev", url = "http://localhost:8080"),
         },
         security = {
                 @SecurityRequirement(name = "bearerAuth")
@@ -37,9 +34,11 @@ import org.springframework.context.annotation.Configuration;
         scheme = "bearer",
         bearerFormat = "JWT",
         in = SecuritySchemeIn.HEADER,
-        description = "Enter your JWT token (without 'Bearer ').\n" +
-                      "Example: eyJhbGciOiJIUzI1NiJ9...\n" +
-                      "The 'Bearer' prefix will be added automatically."
+        description = """
+                Please provide your JWT token to authenticate.
+                **Instructions:**
+                * Simply paste the token value (e.g. `eyJhbGci...`)
+                * **Note:** The `Bearer` prefix is added automatically!"""
 )
 public class SwaggerConfig {
 }

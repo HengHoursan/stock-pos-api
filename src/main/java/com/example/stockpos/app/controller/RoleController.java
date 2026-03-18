@@ -24,7 +24,7 @@ public class RoleController {
 
     private final RoleService service;
 
-    @GetMapping("/all")
+    @PostMapping("/all")
     public ResponseEntity<ApiResponse<List<RoleResponse>>> getAll() {
         return ResponseEntity.ok(ApiResponse.success("Roles fetched successfully", service.findAll()));
     }
@@ -41,17 +41,17 @@ public class RoleController {
         return ResponseEntity.ok(ApiResponse.success("Role fetched successfully", service.findById(request.getId())));
     }
 
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<ApiResponse<RoleResponse>> create(@Valid @RequestBody RoleRequest.CreateRoleRequest request) {
         return ResponseEntity.ok(ApiResponse.success("Role created successfully", service.create(request)));
     }
 
-    @PutMapping
+    @PostMapping("/update")
     public ResponseEntity<ApiResponse<RoleResponse>> update(@Valid @RequestBody RoleRequest.UpdateRoleRequest request) {
         return ResponseEntity.ok(ApiResponse.success("Role updated successfully", service.update(request.getId(), request)));
     }
 
-    @DeleteMapping
+    @PostMapping("/delete")
     public ResponseEntity<ApiResponse<Void>> delete(@Valid @RequestBody IdRequest request) {
         service.delete(request.getId());
         return ResponseEntity.ok(ApiResponse.success("Role deleted successfully", null));

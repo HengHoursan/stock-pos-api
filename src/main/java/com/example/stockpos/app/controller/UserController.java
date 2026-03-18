@@ -24,7 +24,7 @@ public class UserController {
 
     private final UserService userService;
 
-    @GetMapping("/all")
+    @PostMapping("/all")
     public ResponseEntity<ApiResponse<List<UserResponse>>> getAll() {
         return ResponseEntity.ok(ApiResponse.success("Users fetched successfully", userService.findAll()));
     }
@@ -41,17 +41,17 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.success("User fetched successfully", userService.findById(request.getId())));
     }
 
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<ApiResponse<UserResponse>> create(@Valid @RequestBody UserRequest.CreateUserRequest request) {
         return ResponseEntity.ok(ApiResponse.success("User created successfully", userService.create(request)));
     }
 
-    @PutMapping
+    @PostMapping("/update")
     public ResponseEntity<ApiResponse<UserResponse>> update(@Valid @RequestBody UserRequest.UpdateUserRequest request) {
         return ResponseEntity.ok(ApiResponse.success("User updated successfully", userService.update(request.getId(), request)));
     }
 
-    @DeleteMapping
+    @PostMapping("/delete")
     public ResponseEntity<ApiResponse<Void>> delete(@Valid @RequestBody IdRequest request) {
         userService.delete(request.getId());
         return ResponseEntity.ok(ApiResponse.success("User deleted successfully", null));
