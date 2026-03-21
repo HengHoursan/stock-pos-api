@@ -1,5 +1,6 @@
 package com.example.stockpos.app.dto.permission.response;
 
+import com.example.stockpos.app.models.Permission;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,7 +19,7 @@ public class PermissionResponse {
     private String displayName;
     private String group;
     private Integer sort;
-    public static PermissionResponse fromEntity(com.example.stockpos.app.models.Permission permission) {
+    public static PermissionResponse fromEntity(Permission permission) {
         if (permission == null) return null;
         return PermissionResponse.builder()
                 .id(permission.getId())

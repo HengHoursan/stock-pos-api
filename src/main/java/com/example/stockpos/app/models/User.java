@@ -1,5 +1,7 @@
 package com.example.stockpos.app.models;
 
+import com.example.stockpos.app.models.base.BaseModel;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,6 +13,7 @@ import org.hibernate.annotations.SQLRestriction;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,7 +32,7 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @AllArgsConstructor
 @SQLRestriction("is_deleted = false")
-public class User extends BaseEntity implements UserDetails {
+public class User extends BaseModel implements UserDetails {
 
     @Column(nullable = false, unique = true)
     private String username;

@@ -5,9 +5,9 @@ import com.example.stockpos.app.dto.permission.request.PermissionRequest;
 import com.example.stockpos.app.dto.common.response.PaginationMeta;
 import com.example.stockpos.app.dto.common.response.PaginationResponse;
 import com.example.stockpos.app.dto.permission.response.PermissionResponse;
-import com.example.stockpos.app.exception.DuplicateResourceException;
-import com.example.stockpos.app.exception.PermissionNotFoundException;
-import com.example.stockpos.app.exception.ResourceInUseException;
+import com.example.stockpos.app.exception.common.DuplicateResourceException;
+import com.example.stockpos.app.exception.permission.PermissionNotFoundException;
+import com.example.stockpos.app.exception.common.ResourceInUseException;
 import com.example.stockpos.app.models.Permission;
 import com.example.stockpos.app.repository.PermissionRepository;
 import com.example.stockpos.app.repository.RolePermissionRepository;
@@ -30,7 +30,7 @@ public class PermissionServiceImpl implements PermissionService {
     @Override
     public List<PermissionResponse> findAll() {
         return repository.findAll().stream()
-                .map(this::mapToResponse)
+                .map(PermissionResponse::fromEntity)
                 .collect(Collectors.toList());
     }
 
@@ -51,7 +51,7 @@ public class PermissionServiceImpl implements PermissionService {
         // Fetch and return
         Page<Permission> page = repository.findAll(spec, request.toPageable());
         return PaginationResponse.<PermissionResponse>builder()
-                .data(page.getContent().stream().map(this::mapToResponse).collect(Collectors.toList()))
+                .data(page.getContent().stream().map(PermissionResponse::fromEntity).collect(Collectors.toList()))
                 .meta(PaginationMeta.fromPage(page))
                 .build();
     }
@@ -59,7 +59,7 @@ public class PermissionServiceImpl implements PermissionService {
     @Override
     public PermissionResponse findById(Integer id) {
         return repository.findById(id)
-                .map(this::mapToResponse)
+                .map(PermissionResponse::fromEntity)
                 .orElseThrow(() -> new PermissionNotFoundException(id));
     }
 
@@ -75,7 +75,7 @@ public class PermissionServiceImpl implements PermissionService {
                 .group(request.getGroup())
                 .sort(request.getSort())
                 .build();
-        return mapToResponse(repository.save(permission));
+        return PermissionResponse.fromEntity(repository.save(permission));
     }
 
     @Override
@@ -95,7 +95,7 @@ public class PermissionServiceImpl implements PermissionService {
         permission.setGroup(request.getGroup());
         permission.setSort(request.getSort());
         
-        return mapToResponse(repository.save(permission));
+        return PermissionResponse.fromEntity(repository.save(permission));
     }
 
     @Override
@@ -109,15 +109,5 @@ public class PermissionServiceImpl implements PermissionService {
         }
 
         repository.deleteById(id);
-    }
-
-    private PermissionResponse mapToResponse(Permission permission) {
-        return PermissionResponse.builder()
-                .id(permission.getId())
-                .name(permission.getName())
-                .displayName(permission.getDisplayName())
-                .group(permission.getGroup())
-                .sort(permission.getSort())
-                .build();
     }
 }

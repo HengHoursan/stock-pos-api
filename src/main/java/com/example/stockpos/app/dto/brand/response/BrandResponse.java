@@ -1,5 +1,6 @@
 package com.example.stockpos.app.dto.brand.response;
 
+import com.example.stockpos.app.models.Brand;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -28,4 +29,24 @@ public class BrandResponse {
     private Integer updatedBy;
     private LocalDateTime deletedAt;
     private Integer deletedBy;
+
+    public static BrandResponse fromEntity(Brand brand) {
+        if (brand == null) return null;
+        return BrandResponse.builder()
+                .id(brand.getId())
+                .code(brand.getCode())
+                .parentId(brand.getParentId())
+                .name(brand.getName())
+                .slug(brand.getSlug())
+                .description(brand.getDescription())
+                .imageUrl(brand.getImageUrl())
+                .status(brand.getStatus())
+                .createdAt(brand.getCreatedAt())
+                .updatedAt(brand.getUpdatedAt())
+                .createdBy(brand.getCreatedBy())
+                .updatedBy(brand.getUpdatedBy())
+                .deletedAt(brand.getDeletedAt())
+                .deletedBy(brand.getDeletedBy())
+                .build();
+    }
 }

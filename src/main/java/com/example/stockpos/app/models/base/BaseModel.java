@@ -1,4 +1,4 @@
-package com.example.stockpos.app.models;
+package com.example.stockpos.app.models.base;
 
 import jakarta.persistence.*;
 import lombok.Builder;
@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @SuperBuilder
 @EntityListeners(AuditingEntityListener.class)
-public abstract class BaseEntity {
+public abstract class BaseModel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

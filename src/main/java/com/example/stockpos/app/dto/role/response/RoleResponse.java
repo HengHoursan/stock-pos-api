@@ -1,6 +1,7 @@
 package com.example.stockpos.app.dto.role.response;
 
 import com.example.stockpos.app.dto.permission.response.PermissionResponse;
+import com.example.stockpos.app.models.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,7 +21,8 @@ public class RoleResponse {
     private String displayName;
     private Boolean status;
     private List<PermissionResponse> permissions;
-    public static RoleResponse fromEntity(com.example.stockpos.app.models.Role role) {
+
+    public static RoleResponse fromEntity(Role role) {
         if (role == null) return null;
         return RoleResponse.builder()
                 .id(role.getId())

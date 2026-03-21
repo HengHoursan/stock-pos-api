@@ -1,4 +1,4 @@
-package com.example.stockpos.app.exception;
+package com.example.stockpos.app.exception.common;
 
 import com.example.stockpos.app.dto.common.response.ApiResponse;
 import org.springframework.dao.DataIntegrityViolationException;

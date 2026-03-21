@@ -1,10 +1,12 @@
 package com.example.stockpos.app.models;
 
+import com.example.stockpos.app.models.base.BaseModel;
 
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.SQLRestriction;
+
 
 @Entity
 @Table(name = "brands")
@@ -14,7 +16,7 @@ import org.hibernate.annotations.SQLRestriction;
 @AllArgsConstructor
 @SuperBuilder
 @SQLRestriction("is_deleted = false")
-public class Brand extends BaseEntity {
+public class Brand extends BaseModel {
 
     @Column(nullable = false, unique = true, length = 50)
     private String code;

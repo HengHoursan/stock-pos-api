@@ -1,6 +1,7 @@
 package com.example.stockpos.app.dto.user.response;
 
 import com.example.stockpos.app.dto.role.response.RoleResponse;
+import com.example.stockpos.app.models.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -27,7 +28,7 @@ public class UserResponse {
     private LocalDateTime deletedAt;
     private Integer deletedBy;
 
-    public static UserResponse fromEntity(com.example.stockpos.app.models.User user) {
+    public static UserResponse fromEntity(User user) {
         if (user == null) return null;
         return UserResponse.builder()
                 .id(user.getId())
