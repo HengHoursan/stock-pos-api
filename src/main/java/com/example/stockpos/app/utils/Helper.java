@@ -56,4 +56,8 @@ public class Helper {
             System.err.println("Could not delete file: " + fileName + ". Error: " + e.getMessage());
         }
     }
+
+    public static String generateCode(String prefix) {
+        return prefix + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    }
 }

@@ -3,8 +3,11 @@ package com.example.stockpos.app.models;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.SQLRestriction;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,16 +21,15 @@ import java.util.stream.Collectors;
 /**
  * User entity that implements UserDetails for Spring Security integration.
  */
-@Data
 @Entity
 @Table(name = "users")
-@Builder
+@Getter
+@Setter
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class User implements UserDetails {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+@SQLRestriction("is_deleted = false")
+public class User extends BaseEntity implements UserDetails {
 
     @Column(nullable = false, unique = true)
     private String username;

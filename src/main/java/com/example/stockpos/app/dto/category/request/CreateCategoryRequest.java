@@ -16,12 +16,19 @@ import lombok.Builder;
 @Builder
 public class CreateCategoryRequest {
 
+    @Size(max = 50, message = "Code must be at most 50 characters.")
+    private String code;
+
     @PositiveOrZero(message = "Parent ID must be zero or positive.")
     private Integer parentId;
 
     @NotBlank(message = "Name is required.")
     @Size(max = 100, message = "Name must be at most 100 characters.")
     private String name;
+
+    @NotBlank(message = "Slug is required.")
+    @Size(max = 100, message = "Slug must be at most 100 characters.")
+    private String slug;
 
     @Size(max = 255, message = "Description must be at most 255 characters.")
     private String description;

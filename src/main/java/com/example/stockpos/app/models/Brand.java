@@ -7,14 +7,14 @@ import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.SQLRestriction;
 
 @Entity
-@Table(name = "categories")
+@Table(name = "brands")
 @Getter
 @Setter
-@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
+@SuperBuilder
 @SQLRestriction("is_deleted = false")
-public class Category extends BaseEntity {
+public class Brand extends BaseEntity {
 
     @Column(nullable = false, unique = true, length = 50)
     private String code;
@@ -22,15 +22,16 @@ public class Category extends BaseEntity {
     @Column(name = "parent_id")
     private Integer parentId;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, length = 100)
     private String name;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, length = 100)
     private String slug;
 
+    @Column(length = 255)
     private String description;
 
-    @Column(name = "image_url")
+    @Column(name = "image_url", length = 255)
     private String imageUrl;
 
     @Builder.Default

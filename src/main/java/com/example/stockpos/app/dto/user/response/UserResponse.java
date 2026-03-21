@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -16,6 +18,15 @@ public class UserResponse {
     private String email;
     private Boolean status;
     private RoleResponse role;
+
+    // Auditing fields
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+    private Integer createdBy;
+    private Integer updatedBy;
+    private LocalDateTime deletedAt;
+    private Integer deletedBy;
+
     public static UserResponse fromEntity(com.example.stockpos.app.models.User user) {
         if (user == null) return null;
         return UserResponse.builder()
@@ -24,6 +35,12 @@ public class UserResponse {
                 .email(user.getEmail())
                 .status(user.getStatus())
                 .role(RoleResponse.fromEntity(user.getRole()))
+                .createdAt(user.getCreatedAt())
+                .updatedAt(user.getUpdatedAt())
+                .createdBy(user.getCreatedBy())
+                .updatedBy(user.getUpdatedBy())
+                .deletedAt(user.getDeletedAt())
+                .deletedBy(user.getDeletedBy())
                 .build();
     }
 }

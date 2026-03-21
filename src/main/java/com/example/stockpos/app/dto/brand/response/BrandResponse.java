@@ -1,4 +1,4 @@
-package com.example.stockpos.app.dto.category.response;
+package com.example.stockpos.app.dto.brand.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CategoryResponse {
+public class BrandResponse {
     private Integer id;
     private String code;
     private Integer parentId;
@@ -20,7 +20,7 @@ public class CategoryResponse {
     private String description;
     private String imageUrl;
     private Boolean status;
-    
+
     // Auditing fields
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

@@ -1,21 +1,16 @@
-package com.example.stockpos.app.dto.category.request;
+package com.example.stockpos.app.dto.brand.request;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.Builder;
+import lombok.*;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UpdateCategoryRequest {
-
+public class UpdateBrandRequest {
     @NotNull(message = "ID is required.")
     private Integer id;
 

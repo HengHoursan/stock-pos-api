@@ -1,5 +1,6 @@
 package com.example.stockpos.app.service.impl;
 
+import com.example.stockpos.app.dto.common.request.IdRequest;
 import com.example.stockpos.app.dto.common.request.PaginationRequest;
 import com.example.stockpos.app.dto.user.request.UserRequest;
 import com.example.stockpos.app.dto.common.response.PaginationMeta;
@@ -16,14 +17,19 @@ import com.example.stockpos.app.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserServiceImpl implements UserService {
 
     private final UserRepository repository;
@@ -77,6 +83,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public UserResponse create(UserRequest.CreateUserRequest request) {
         if (repository.existsByEmail(request.getEmail())) {
             throw new DuplicateResourceException("User with email " + request.getEmail() + " already exists");
@@ -105,6 +112,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public UserResponse update(Integer id, UserRequest.UpdateUserRequest request) {
         User user = repository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
@@ -127,8 +135,31 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void delete(Integer id) {
-        repository.deleteById(id);
+    @Transactional
+    public void softDelete(IdRequest request) {
+        User user = repository.findById(request.getId())
+                .orElseThrow(() -> new UserNotFoundException(request.getId()));
+        user.setDeleted(true);
+        user.setDeletedAt(LocalDateTime.now());
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated() && !authentication.getPrincipal().equals("anonymousUser")) {
+            Object principal = authentication.getPrincipal();
+            if (principal instanceof User currentUser) {
+                user.setDeletedBy(currentUser.getId());
+            }
+        }
+
+        repository.save(user);
+    }
+
+    @Override
+    @Transactional
+    public void forceDelete(IdRequest request) {
+        if (!repository.existsById(request.getId())) {
+            throw new UserNotFoundException(request.getId());
+        }
+        repository.deleteById(request.getId());
     }
 
 }

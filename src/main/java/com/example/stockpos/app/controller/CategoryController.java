@@ -58,9 +58,15 @@ public class CategoryController {
         return ResponseEntity.ok(ApiResponse.success("Category status updated successfully", null));
     }
 
-    @PostMapping("/delete")
-    public ResponseEntity<ApiResponse<Void>> delete(@Valid @RequestBody IdRequest request) {
-        categoryService.delete(request);
-        return ResponseEntity.ok(ApiResponse.success("Category deleted successfully", null));
+    @PostMapping("/soft-delete")
+    public ResponseEntity<ApiResponse<Void>> softDelete(@Valid @RequestBody IdRequest request) {
+        categoryService.softDelete(request);
+        return ResponseEntity.ok(ApiResponse.success("Category soft-deleted successfully", null));
+    }
+
+    @PostMapping("/force-delete")
+    public ResponseEntity<ApiResponse<Void>> forceDelete(@Valid @RequestBody IdRequest request) {
+        categoryService.forceDelete(request);
+        return ResponseEntity.ok(ApiResponse.success("Category force-deleted successfully", null));
     }
 }

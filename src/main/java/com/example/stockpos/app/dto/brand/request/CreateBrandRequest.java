@@ -1,33 +1,27 @@
-package com.example.stockpos.app.dto.category.request;
+package com.example.stockpos.app.dto.brand.request;
 
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.Builder;
+import lombok.*;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UpdateCategoryRequest {
-
-    @NotNull(message = "ID is required.")
-    private Integer id;
-
+public class CreateBrandRequest {
     @Size(max = 50, message = "Code must be at most 50 characters.")
     private String code;
 
     @PositiveOrZero(message = "Parent ID must be zero or positive.")
     private Integer parentId;
 
+    @NotBlank(message = "Name is required.")
     @Size(max = 100, message = "Name must be at most 100 characters.")
     private String name;
 
+    @NotBlank(message = "Slug is required.")
     @Size(max = 100, message = "Slug must be at most 100 characters.")
     private String slug;
 

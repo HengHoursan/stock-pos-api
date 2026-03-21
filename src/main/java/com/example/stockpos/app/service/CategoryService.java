@@ -15,5 +15,6 @@ public interface CategoryService {
     CategoryResponse create(CreateCategoryRequest request);
     CategoryResponse update(UpdateCategoryRequest request);
     void updateStatus(UpdateCategoryStatusRequest request);
-    void delete(IdRequest request);
+    void softDelete(IdRequest request);
+    void forceDelete(IdRequest request);
 }

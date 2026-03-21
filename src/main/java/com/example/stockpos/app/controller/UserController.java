@@ -1,4 +1,3 @@
-
 package com.example.stockpos.app.controller;
 
 import com.example.stockpos.app.dto.common.request.IdRequest;
@@ -51,9 +50,15 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.success("User updated successfully", userService.update(request.getId(), request)));
     }
 
-    @PostMapping("/delete")
-    public ResponseEntity<ApiResponse<Void>> delete(@Valid @RequestBody IdRequest request) {
-        userService.delete(request.getId());
-        return ResponseEntity.ok(ApiResponse.success("User deleted successfully", null));
+    @PostMapping("/soft-delete")
+    public ResponseEntity<ApiResponse<Void>> softDelete(@Valid @RequestBody IdRequest request) {
+        userService.softDelete(request);
+        return ResponseEntity.ok(ApiResponse.success("User soft-deleted successfully", null));
+    }
+
+    @PostMapping("/force-delete")
+    public ResponseEntity<ApiResponse<Void>> forceDelete(@Valid @RequestBody IdRequest request) {
+        userService.forceDelete(request);
+        return ResponseEntity.ok(ApiResponse.success("User force-deleted successfully", null));
     }
 }
